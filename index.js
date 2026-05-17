@@ -37,10 +37,6 @@ async function run() {
 
   const testCollection = db.collection("test_collection");
 
-// Insert a sample document to force MongoDB to show the database
-await testCollection.insertOne({ name: "Server Test", status: "Active" });
-console.log("Test data inserted successfully!");
-
 
 
 
