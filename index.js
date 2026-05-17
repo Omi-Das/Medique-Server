@@ -34,6 +34,16 @@ async function run() {
     // Example collection reference placeholder (uncomment and rename when needed)
     // const mediqueCollection = db.collection("appointments");
      // Send a ping to confirm a successful connection
+
+  const testCollection = db.collection("test_collection");
+
+// Insert a sample document to force MongoDB to show the database
+await testCollection.insertOne({ name: "Server Test", status: "Active" });
+console.log("Test data inserted successfully!");
+
+
+
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch (error) {
