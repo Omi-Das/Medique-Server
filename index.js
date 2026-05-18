@@ -26,15 +26,18 @@ async function run() {
     const db = client.db("medique");
     const testCollection = db.collection("test_collection");
 
-    // 🎯 রিকোয়ারমেন্ট: অনলি ৬ জন টিউটর নিয়ে আসার জন্য GET API (.limit ব্যবহার করে)
+    //Tutor Feature Get Method
     app.get('/api/v1/available-tutors', async (req, res) => {
+     
       try {
-        // .limit(6) ব্যবহার করে ডাটাবেজ থেকে মাত্র ৬টি ডকুমেন্ট ফিল্টার করা হচ্ছে
         const tutors = await testCollection.find({}).limit(6).toArray();
         res.status(200).json(tutors);
-      } catch (error) {
+      }
+      
+      catch (error) {
         res.status(500).json({ message: "Failed to fetch tutors", error: error.message });
       }
+
     });
 
     await client.db("admin").command({ ping: 1 });
