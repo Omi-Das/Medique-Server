@@ -40,6 +40,30 @@ async function run() {
 
     });
 
+
+// add tutor POST method
+app.post('/api/v1/tutors', async (req, res) => {
+  try {
+    const newTutor = req.body;
+
+    // Optional Validation: Ensure vital fields are present before inserting
+    if (!newTutor.name || !newTutor.photo || !newTutor.subject || !newTutor.hourlyFee) {
+      return res.status(400).json({ message: "Missing required tutor profile fields." });
+    }
+
+    // Insert the object payload received from frontend directly into MongoDB
+    const result = await testCollection.insertOne(newTutor);
+    
+    res.status(201).json({
+      message: "Tutor profile created successfully!",
+      insertedId: result.insertedId
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to store tutor profile", error: error.message });
+  }
+});
+
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch (error) {
