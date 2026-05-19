@@ -1,6 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 dotenv.config();
 
@@ -69,6 +69,92 @@ app.get('/api/v1/all-tutors', async (req, res) => {
     res.status(200).json(allTutors);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch tutor data", error: error.message });
+  }
+});
+
+// 1. GET API: Fetch detailed profile parameters for a specific tutor by ID
+app.get('/api/v1/tutors/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    
+    // Check if the passed ID is a valid 24-character hex string before querying MongoDB
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid Tutor ID format." });
+    }
+
+    const query = { _id: new ObjectId(id) };
+    const tutor = await testCollection.findOne(query);
+    
+    if (!tutor) {
+      return res.status(404).json({ message: "Tutor profile not found." });
+    }
+    
+    res.status(200).json(tutor);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch tutor details", error: error.message });
+  }
+});
+
+// 2. POST API: Process booking transactions with strict backend validation guards
+app.post('/api/v1/bookings', async (req, res) => {
+  try {
+    const bookingData = req.body;
+    const tutorId = bookingData.tutorId;
+
+    if (!ObjectId.isValid(tutorId)) {
+      return res.status(400).json({ message: "Invalid target Tutor ID parameter format." });
+    }
+
+    const tutorQuery = { _id: new ObjectId(tutorId) };
+    const tutor = await testCollection.findOne(tutorQuery);
+
+    if (!tutor) {
+      return res.status(404).json({ message: "The selected tutor profile does not exist." });
+    }
+
+    // 🎯 Requirement Validation A: Total Slot Availability Guard Check
+    const currentSlots = Number(tutor.totalSlot);
+    if (currentSlots <= 0) {
+      return res.status(400).json({ 
+        message: "This session is fully booked. You can’t join at the moment." 
+      });
+    }
+
+    // 🎯 Requirement Validation B: Session Start Date Restriction Guard Check
+    const currentDate = new Date();
+    const sessionStartDate = new Date(tutor.startDate);
+
+    // Normalize timestamps to midnight for clean date-only mathematical evaluation comparisons
+    currentDate.setHours(0, 0, 0, 0);
+    sessionStartDate.setHours(0, 0, 0, 0);
+
+    if (currentDate < sessionStartDate) {
+      return res.status(400).json({ 
+        message: "Booking is not available yet for this tutor." 
+      });
+    }
+
+    // System automatically generates the Book Status field parameter
+    const finalBookingPayload = {
+      ...bookingData,
+      bookStatus: "Confirmed",
+      bookedAt: new Date()
+    };
+
+    // Store transaction logs into a dedicated separate database storage tier collection
+    const bookingsCollection = client.db("medique").collection("bookings");
+    const bookingResult = await bookingsCollection.insertOne(finalBookingPayload);
+
+    // 🎯 Requirement: Automatically decrease the totalSlot value parameter by -1 atomically
+    await testCollection.updateOne(tutorQuery, { $inc: { totalSlot: -1 } });
+
+    res.status(201).json({ 
+      message: "🎉 Booking completed successfully!", 
+      insertedId: bookingResult.insertedId 
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: "Internal booking process operation failed", error: error.message });
   }
 });
 
