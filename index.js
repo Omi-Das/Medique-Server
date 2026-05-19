@@ -26,19 +26,18 @@ async function run() {
     const db = client.db("medique");
     const testCollection = db.collection("test_collection");
 
-    //Tutor Feature Get Method
-    app.get('/api/v1/available-tutors', async (req, res) => {
+//Tutor Feature Get Method
+app.get('/api/v1/available-tutors', async (req, res) => {
      
-      try {
+  try {
         const tutors = await testCollection.find({}).limit(6).toArray();
         res.status(200).json(tutors);
       }
       
-      catch (error) {
+  catch (error) {
         res.status(500).json({ message: "Failed to fetch tutors", error: error.message });
       }
-
-    });
+  });
 
 
 // add tutor POST method
@@ -60,6 +59,16 @@ app.post('/api/v1/tutors', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to store tutor profile", error: error.message });
+  }
+});
+
+// Database theke sob data niye asa get Method e
+app.get('/api/v1/all-tutors', async (req, res) => {
+  try {
+    const allTutors = await testCollection.find({}).toArray();
+    res.status(200).json(allTutors);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch tutor data", error: error.message });
   }
 });
 
