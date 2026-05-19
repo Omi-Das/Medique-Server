@@ -158,12 +158,108 @@ app.post('/api/v1/bookings', async (req, res) => {
   }
 });
 
+// Filter kora my tutor e get method
+app.get('/api/v1/my-tutors', async (req, res) => {
+  try {
+    const email = req.query.email;
+    if (!email) {
+      return res.status(400).json({ message: "User email query parameter is required." });
+    }
+    const query = { "createdBy.email": email };
+    const result = await testCollection.find(query).toArray();
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch your tutors directory", error: error.message });
+  }
+});
 
-    await client.db("admin").command({ ping: 1 });
+// My tutor data put
+app.put('/api/v1/tutors/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updatedData = req.body;
+    const filter = { _id: new ObjectId(id) };
+    
+    const updateDoc = {
+      $set: {
+        name: updatedData.name,
+        photo: updatedData.photo,
+        subject: updatedData.subject,
+        hourlyFee: Number(updatedData.hourlyFee),
+        availableDays: updatedData.availableDays,
+        timeSlot: updatedData.timeSlot,
+        totalSlot: Number(updatedData.totalSlot),
+        startDate: updatedData.startDate,
+        institution: updatedData.institution,
+        experience: updatedData.experience,
+        location: updatedData.location,
+        teachingMode: updatedData.teachingMode,
+      }
+    };
+
+    const result = await testCollection.updateOne(filter, updateDoc);
+    res.status(200).json({ message: "Tutor entry updated successfully!", result });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update tutor record", error: error.message });
+  }
+});
+
+// My Tutor theke delete
+app.delete('/api/v1/tutors/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await testCollection.deleteOne(query);
+    res.status(200).json({ message: "Tutor record deleted successfully!", result });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete tutor record", error: error.message });
+  }
+});
+
+
+// 1=> GET API:specific student er Email onujayi Booking filter kore niye asa
+app.get('/api/v1/my-bookings', async (req, res) => {
+  try {
+    const email = req.query.email;
+    if (!email) {
+      return res.status(400).json({ message: "Student email parameter is required." });
+    }
+    const bookingsCollection = client.db("medique").collection("bookings");
+    const query = { studentEmail: email };
+    const result = await bookingsCollection.find(query).toArray();
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch bookings record", error: error.message });
+  }
+});
+
+// ২. PATCH API: Booking staus update kore cancel kora
+app.patch('/api/v1/bookings/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { bookStatus } = req.body;
+    const bookingsCollection = client.db("medique").collection("bookings");
+    const filter = { _id: new ObjectId(id) };
+    
+    const updateDoc = {
+      $set: { bookStatus: bookStatus }
+    };
+
+    const result = await bookingsCollection.updateOne(filter, updateDoc);
+    res.status(200).json({ message: "Booking deployment updated successfully!", result });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update booking status", error: error.message });
+  }
+});
+
+
+  await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch (error) {
     console.error("Database connection error:", error);
   }
+
+  
 }
 run().catch(console.dir);
 
