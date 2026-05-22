@@ -233,7 +233,7 @@ app.get('/api/v1/my-bookings', async (req, res) => {
   }
 });
 
-// ২. PATCH API: Booking staus update kore cancel kora
+// => PATCH API: Booking staus update kore cancel kora
 app.patch('/api/v1/bookings/:id', async (req, res) => {
   try {
     const id = req.params.id;
