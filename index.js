@@ -62,15 +62,43 @@ app.post('/api/v1/tutors', async (req, res) => {
   }
 });
 
-// Database theke sob data niye asa get Method e
+// // Database theke sob data niye asa get Method e
+// app.get('/api/v1/all-tutors', async (req, res) => {
+//   try {
+//     const allTutors = await testCollection.find({}).toArray();
+//     res.status(200).json(allTutors);
+//   } catch (error) {
+//     res.status(500).json({ message: "Failed to fetch tutor data", error: error.message });
+//   }
+// });
+
+// Replace all-turors get id for search and filter method in requirements
 app.get('/api/v1/all-tutors', async (req, res) => {
   try {
-    const allTutors = await testCollection.find({}).toArray();
+    const { search, startDate, endDate } = req.query;
+    let query = {};
+
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
+    }
+
+    if (startDate || endDate) {
+      query.startDate = {};
+      if (startDate) {
+        query.startDate.$gte = startDate; 
+      }
+      if (endDate) {
+        query.startDate.$lte = endDate; 
+      }
+    }
+
+    const allTutors = await testCollection.find(query).toArray();
     res.status(200).json(allTutors);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch tutor data", error: error.message });
+    res.status(500).json({ message: "Failed to fetch filtered tutors directory records.", error: error.message });
   }
 });
+
 
 // 1. GET API: Fetch detailed profile parameters for a specific tutor by ID
 app.get('/api/v1/tutors/:id', async (req, res) => {
@@ -224,6 +252,10 @@ app.get('/api/v1/my-bookings', async (req, res) => {
     if (!email) {
       return res.status(400).json({ message: "Student email parameter is required." });
     }
+
+    // const db = client.db("medique");
+    // const testCollection = db.collection("test_collection");
+
     const bookingsCollection = client.db("medique").collection("bookings");
     const query = { studentEmail: email };
     const result = await bookingsCollection.find(query).toArray();
