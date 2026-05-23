@@ -62,7 +62,7 @@ app.post('/api/v1/tutors', async (req, res) => {
   }
 });
 
-// // Database theke sob data niye asa get Method e
+// Database theke sob data niye asa get Method e
 // app.get('/api/v1/all-tutors', async (req, res) => {
 //   try {
 //     const allTutors = await testCollection.find({}).toArray();
