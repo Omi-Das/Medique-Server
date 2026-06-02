@@ -2,13 +2,13 @@ const express = require('express');
 const dotenv = require('dotenv');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
+const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 dotenv.config();
 
 const uri = process.env.MONGO_URI;
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -19,6 +19,29 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
+
+const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jwks"));
+
+const verifyToken = async (req, res, next) => {
+  const authHeader = req?.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const { payload } = await jwtVerify(token, JWKS);
+    console.log(payload);
+    next();
+  } catch (error) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+};
+
 
 async function run() {
   try {
@@ -101,7 +124,7 @@ app.get('/api/v1/all-tutors', async (req, res) => {
 
 
 // 1. GET API: Fetch detailed profile parameters for a specific tutor by ID
-app.get('/api/v1/tutors/:id', async (req, res) => {
+app.get('/api/v1/tutors/:id', verifyToken , async (req, res) => {
   try {
     const id = req.params.id;
     
@@ -302,66 +325,3 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
-
-
-// const express = require('express');
-// const dotenv = require('dotenv');
-// const { MongoClient, ServerApiVersion } = require('mongodb');
-// const cors = require('cors');
-// dotenv.config();
-
-// // Get the MongoDB URI from the environment variables
-// const uri = process.env.MONGO_URI;
-
-// const app = express();
-// const port = process.env.PORT || 5000; // Defaults to 5000 if process.env.PORT is missing
-
-// // Middleware
-// app.use(cors());
-// app.use(express.json());
-
-// // Create a MongoClient instance
-// const client = new MongoClient(uri, {
-//   serverApi: {
-//     version: ServerApiVersion.v1,
-//     strict: true,
-//     deprecationErrors: true,
-//   }
-// });
-
-// async function run() {
-//   try {
-//     // Connect the client to the server
-//     await client.connect();
-
-//     // Database initialized with the name 'medique'
-//     const db = client.db("medique");
-    
-//     // Example collection reference placeholder (uncomment and rename when needed)
-//     // const mediqueCollection = db.collection("appointments");
-//      // Send a ping to confirm a successful connection
-
-//   const testCollection = db.collection("test_collection");
-
-
-
-
-//     await client.db("admin").command({ ping: 1 });
-//     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-//   } catch (error) {
-//     console.error("Database connection error:", error);
-//   } finally {
-//     // Keeping connection open for incoming requests
-//   }
-// }
-// run().catch(console.dir);
-
-// // Root route to verify server status
-// app.get('/', (req, res) => {
-//     res.send('Medique Server is Running!');
-// });
-
-// // Start the server
-// app.listen(port, () => {
-//     console.log(`Server is running on port ${port}`);
-// });
