@@ -64,7 +64,7 @@ app.get('/api/v1/available-tutors', async (req, res) => {
 
 
 // add tutor POST method
-app.post('/api/v1/tutors', async (req, res) => {
+app.post('/api/v1/tutors', verifyToken , async (req, res) => {
   try {
     const newTutor = req.body;
 
@@ -96,7 +96,7 @@ app.post('/api/v1/tutors', async (req, res) => {
 // });
 
 // Replace all-turors get id for search and filter method in requirements
-app.get('/api/v1/all-tutors', async (req, res) => {
+app.get('/api/v1/all-tutors' , async (req, res) => {
   try {
     const { search, startDate, endDate } = req.query;
     let query = {};
@@ -147,7 +147,7 @@ app.get('/api/v1/tutors/:id', verifyToken , async (req, res) => {
 });
 
 // 2. POST API: Process booking transactions with strict backend validation guards
-app.post('/api/v1/bookings', async (req, res) => {
+app.post('/api/v1/bookings', verifyToken , async (req, res) => {
   try {
     const bookingData = req.body;
     const tutorId = bookingData.tutorId;
@@ -210,7 +210,7 @@ app.post('/api/v1/bookings', async (req, res) => {
 });
 
 // Filter kora my tutor e get method
-app.get('/api/v1/my-tutors', async (req, res) => {
+app.get('/api/v1/my-tutors', verifyToken , async (req, res) => {
   try {
     const email = req.query.email;
     if (!email) {
@@ -225,7 +225,7 @@ app.get('/api/v1/my-tutors', async (req, res) => {
 });
 
 // My tutor data put
-app.put('/api/v1/tutors/:id', async (req, res) => {
+app.put('/api/v1/tutors/:id', verifyToken , async (req, res) => {
   try {
     const id = req.params.id;
     const updatedData = req.body;
@@ -256,7 +256,7 @@ app.put('/api/v1/tutors/:id', async (req, res) => {
 });
 
 // My Tutor theke delete
-app.delete('/api/v1/tutors/:id', async (req, res) => {
+app.delete('/api/v1/tutors/:id', verifyToken , async (req, res) => {
   try {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
@@ -269,7 +269,7 @@ app.delete('/api/v1/tutors/:id', async (req, res) => {
 
 
 // 1=> GET API:specific student er Email onujayi Booking filter kore niye asa
-app.get('/api/v1/my-bookings', async (req, res) => {
+app.get('/api/v1/my-bookings', verifyToken , async (req, res) => {
   try {
     const email = req.query.email;
     if (!email) {
@@ -289,7 +289,7 @@ app.get('/api/v1/my-bookings', async (req, res) => {
 });
 
 // => PATCH API: Booking staus update kore cancel kora
-app.patch('/api/v1/bookings/:id', async (req, res) => {
+app.patch('/api/v1/bookings/:id', verifyToken , async (req, res) => {
   try {
     const id = req.params.id;
     const { bookStatus } = req.body;
