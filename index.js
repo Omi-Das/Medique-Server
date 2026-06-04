@@ -64,16 +64,14 @@ app.get('/api/v1/available-tutors', async (req, res) => {
 
 
 // add tutor POST method
-app.post('/api/v1/tutors', verifyToken , async (req, res) => {
+app.post('/api/v1/tutors', verifyToken, async (req, res) => {
   try {
     const newTutor = req.body;
 
-    // Optional Validation: Ensure vital fields are present before inserting
     if (!newTutor.name || !newTutor.photo || !newTutor.subject || !newTutor.hourlyFee) {
       return res.status(400).json({ message: "Missing required tutor profile fields." });
     }
 
-    // Insert the object payload received from frontend directly into MongoDB
     const result = await testCollection.insertOne(newTutor);
     
     res.status(201).json({
@@ -81,19 +79,9 @@ app.post('/api/v1/tutors', verifyToken , async (req, res) => {
       insertedId: result.insertedId
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to store tutor profile", error: error.message });
+    res.status(500).json({ message: "Failed to store tutor details", error: error.message });
   }
 });
-
-// Database theke sob data niye asa get Method e
-// app.get('/api/v1/all-tutors', async (req, res) => {
-//   try {
-//     const allTutors = await testCollection.find({}).toArray();
-//     res.status(200).json(allTutors);
-//   } catch (error) {
-//     res.status(500).json({ message: "Failed to fetch tutor data", error: error.message });
-//   }
-// });
 
 // Replace all-turors get id for search and filter method in requirements
 app.get('/api/v1/all-tutors' , async (req, res) => {
