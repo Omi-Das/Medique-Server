@@ -135,7 +135,7 @@ app.get('/api/v1/tutors/:id', verifyToken , async (req, res) => {
 });
 
 // 2. POST API: Process booking transactions with strict backend validation guards
-app.post('/api/v1/bookings', verifyToken , async (req, res) => {
+app.post('/api/v1/bookings', verifyToken, async (req, res) => {
   try {
     const bookingData = req.body;
     const tutorId = bookingData.tutorId;
@@ -151,7 +151,6 @@ app.post('/api/v1/bookings', verifyToken , async (req, res) => {
       return res.status(404).json({ message: "The selected tutor profile does not exist." });
     }
 
-    // 🎯 Requirement Validation A: Total Slot Availability Guard Check
     const currentSlots = Number(tutor.totalSlot);
     if (currentSlots <= 0) {
       return res.status(400).json({ 
@@ -159,11 +158,9 @@ app.post('/api/v1/bookings', verifyToken , async (req, res) => {
       });
     }
 
-    // 🎯 Requirement Validation B: Session Start Date Restriction Guard Check
     const currentDate = new Date();
     const sessionStartDate = new Date(tutor.startDate);
 
-    // Normalize timestamps to midnight for clean date-only mathematical evaluation comparisons
     currentDate.setHours(0, 0, 0, 0);
     sessionStartDate.setHours(0, 0, 0, 0);
 
@@ -173,18 +170,15 @@ app.post('/api/v1/bookings', verifyToken , async (req, res) => {
       });
     }
 
-    // System automatically generates the Book Status field parameter
     const finalBookingPayload = {
       ...bookingData,
       bookStatus: "Confirmed",
       bookedAt: new Date()
     };
 
-    // Store transaction logs into a dedicated separate database storage tier collection
     const bookingsCollection = client.db("medique").collection("bookings");
     const bookingResult = await bookingsCollection.insertOne(finalBookingPayload);
 
-    // 🎯 Requirement: Automatically decrease the totalSlot value parameter by -1 atomically
     await testCollection.updateOne(tutorQuery, { $inc: { totalSlot: -1 } });
 
     res.status(201).json({ 
@@ -257,15 +251,12 @@ app.delete('/api/v1/tutors/:id', verifyToken , async (req, res) => {
 
 
 // 1=> GET API:specific student er Email onujayi Booking filter kore niye asa
-app.get('/api/v1/my-bookings', verifyToken , async (req, res) => {
+app.get('/api/v1/my-bookings', verifyToken, async (req, res) => {
   try {
     const email = req.query.email;
     if (!email) {
       return res.status(400).json({ message: "Student email parameter is required." });
     }
-
-    // const db = client.db("medique");
-    // const testCollection = db.collection("test_collection");
 
     const bookingsCollection = client.db("medique").collection("bookings");
     const query = { studentEmail: email };
@@ -277,7 +268,7 @@ app.get('/api/v1/my-bookings', verifyToken , async (req, res) => {
 });
 
 // => PATCH API: Booking staus update kore cancel kora
-app.patch('/api/v1/bookings/:id', verifyToken , async (req, res) => {
+app.patch('/api/v1/bookings/:id', verifyToken, async (req, res) => {
   try {
     const id = req.params.id;
     const { bookStatus } = req.body;
