@@ -240,7 +240,7 @@ app.post('/api/v1/bookings', verifyToken, async (req, res) => {
         const result = await bookingsCollection.updateOne(filter, updateDoc);
         res.status(200).json({ message: "Booking deployment updated successfully!!", result });
       } catch (error) {
-        res.status(500).json({ message: "Failed to update booking status", error: error.message });
+        res.status(500).json({ message: "Failed to update booking status!!", error: error.message });
       }
     });
 
