@@ -244,7 +244,7 @@ app.post('/api/v1/bookings', verifyToken, async (req, res) => {
       }
     });
 
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log("Pinged your deployment. You successfully connected to MongoDB!!");
   } catch (error) {
     console.error("Database connection error:", error);
   }
